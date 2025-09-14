@@ -39,10 +39,7 @@ async function runTest() {
       })
 
       innerPromise
-        .then(() => {
-          instance.close()
-          resolve()
-        })
+        .then(resolve)
         .catch(reject)
     } catch (error) {
       log(`Error in runMultiTest: ${error.message}`)

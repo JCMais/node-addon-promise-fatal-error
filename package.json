@@ -13,9 +13,7 @@
   "scripts": {
     "gyp": "node-gyp",
     "gen:compile_commands:debug": "node-gyp -- configure --debug=Debug -f compile_commands_json",
-    "gen:compile_commands:release": "node-gyp -- configure -f compile_commands_json",
-    "reproduce-issue": "node reproduce-issue.js",
-    "reproduce-issue-with-tsfn": "USE_THREAD_SAFE=true node reproduce-issue.js"
+    "gen:compile_commands:release": "node-gyp -- configure -f compile_commands_json"
   },
   "packageManager": "pnpm@9.9.0+sha256.7a4261e50d9a44d9240baf6c9d6e10089dcf0a79d0007f2a26985a6927324177"
 }

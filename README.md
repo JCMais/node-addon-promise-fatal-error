@@ -5,12 +5,12 @@ Build
 pnpm gyp rebuild --debug
 ```
 
-Run the test calling MakeCallback (will crash)
+Run the test calling with Call (will not crash)
 ```bash
-pnpm run reproduce-issue
+node reproduce-issue.js
 ```
 
-Run the test calling ThreadSafeFunction (will not crash)
+Run the test calling with MakeCallback (will crash)
 ```bash
-pnpm run reproduce-issue -- USE_THREAD_SAFE=true
+USE_MAKE_CALLBACK=true node reproduce-issue.js
 ```

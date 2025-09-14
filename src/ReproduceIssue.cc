@@ -65,9 +65,6 @@ void ReproduceIssue::Dispose() {
   uv_timer_stop(&this->timeout);
 
   this->cbOnMessage.Reset();
-  if (this->tsfnOnMessage) {
-    this->tsfnOnMessage.Release();
-  }
 }
 
 // Initialize the class for export
@@ -108,18 +105,11 @@ Napi::Value ReproduceIssue::OnMessage(const Napi::CallbackInfo &info) {
   if (isNull) {
     this->cbOnMessage.Reset();
     this->asyncContextOnMessage.reset();
-    if (this->tsfnOnMessage) {
-      this->tsfnOnMessage.Release();
-    }
   } else {
     this->cbOnMessage = Napi::Persistent(arg.As<Napi::Function>());
 
     this->asyncContextOnMessage =
         std::make_unique<Napi::AsyncContext>(env, "ReproduceIssue::OnMessage");
-
-    this->tsfnOnMessage = Napi::ThreadSafeFunction::New(
-        env, arg.As<Napi::Function>(), "ReproduceIssue::OnMessage", 0, 1,
-        [](Napi::Env) {});
   }
 
   return info.This();
@@ -146,36 +136,23 @@ void ReproduceIssue::CallOnMessageCallback() {
   Napi::Env env = Env();
   Napi::HandleScope scope(env);
 
-  const char *useThreadSafe = std::getenv("USE_THREAD_SAFE");
-  bool shouldUseThreadSafe =
-      useThreadSafe && std::string(useThreadSafe) == "true";
+  const char *useMakeCallback = std::getenv("USE_MAKE_CALLBACK");
+  bool shouldUseMakeCallback =
+      useMakeCallback && std::string(useMakeCallback) == "true";
 
-  if (shouldUseThreadSafe && this->tsfnOnMessage) {
-    // Use ThreadSafeFunction
-    auto status = this->tsfnOnMessage.BlockingCall(
-        [](Napi::Env env, Napi::Function jsCallback) {
-          Napi::Value data = env.Null();
-          jsCallback.Call({data});
-        });
+  Napi::Function callback = this->cbOnMessage.Value();
 
-    if (status != napi_ok) {
-      // potentially do something here
-    }
-  } else {
+  Napi::Value data = env.Null();
 
-    Napi::Function callback = this->cbOnMessage.Value();
-
-    Napi::Value data = env.Null();
-
-    try {
+  try {
+    if (shouldUseMakeCallback) {
       callback.MakeCallback(this->Value(), {data},
                             *this->asyncContextOnMessage);
-      // this does not fail!
-      // callback.Call(this->Value(), {data});
-
-    } catch (const Napi::Error &e) {
-      // ignore any js error
+    } else {
+      callback.Call(this->Value(), {data});
     }
+  } catch (const Napi::Error &e) {
+    // ignore any js error
   }
 
   if (!this->isOpen)

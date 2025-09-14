@@ -27,7 +27,6 @@ private:
   void CallOnMessageCallback();
 
   Napi::FunctionReference cbOnMessage;
-  Napi::ThreadSafeFunction tsfnOnMessage;
   std::unique_ptr<Napi::AsyncContext> asyncContextOnMessage;
 
   uv_timer_t timeout;
